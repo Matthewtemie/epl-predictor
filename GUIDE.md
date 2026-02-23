@@ -298,46 +298,7 @@ python app.py
 
 ---
 
-## 8. Step 6: Deployment <a name="8-step-6-deployment"></a>
 
-### Option A: Railway (Easiest, free tier)
-
-```bash
-# Push to GitHub
-git init && git add . && git commit -m "MatchForecast"
-gh repo create match-forecast --public --push
-
-# Go to railway.app → New Project → Deploy from GitHub
-# Set start command: gunicorn app:app --bind 0.0.0.0:$PORT
-```
-
-### Option B: Render (Free tier)
-
-1. Push to GitHub
-2. Go to render.com → New Web Service
-3. Connect your repo
-4. Build command: `pip install -r requirements.txt`
-5. Start command: `gunicorn app:app`
-
-### Option C: Heroku
-
-```bash
-echo "web: gunicorn app:app" > Procfile
-heroku create match-forecast
-git push heroku main
-```
-
-### Option D: Docker
-
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY . .
-RUN pip install -r requirements.txt
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000"]
-```
-
----
 
 ## 9. How to Improve the Model <a name="9-improvements"></a>
 
