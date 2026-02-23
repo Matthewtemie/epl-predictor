@@ -1,0 +1,37 @@
+{
+  "model_type": "Logistic Regression",
+  "test_accuracy": 0.5462184873949579,
+  "cv_accuracy": 0.5435384235235977,
+  "n_features": 23,
+  "n_training_samples": 1424,
+  "feature_names": [
+    "home_win_rate",
+    "home_draw_rate",
+    "home_avg_goals_scored",
+    "home_avg_goals_conceded",
+    "home_goal_diff",
+    "home_ppg",
+    "home_home_win_rate",
+    "home_shots_avg",
+    "home_sot_avg",
+    "away_win_rate",
+    "away_draw_rate",
+    "away_avg_goals_scored",
+    "away_avg_goals_conceded",
+    "away_goal_diff",
+    "away_ppg",
+    "away_away_win_rate",
+    "away_shots_avg",
+    "away_sot_avg",
+    "win_rate_diff",
+    "ppg_diff",
+    "goal_diff_diff",
+    "attack_vs_defense",
+    "defense_vs_attack"
+  ],
+  "classes": [
+    "Home Win",
+    "Draw",
+    "Away Win"
+  ]
+}

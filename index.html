@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchForecast — Premier League Predictor by TemiLovesData</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FAF7F2;
+            --warm-white: #F5F1EB;
+            --sand: #EDE8DF;
+            --ink: #1a1a1a;
+            --ink-light: #3d3d3d;
+            --ink-muted: #7a7a7a;
+            --ink-faint: #b0a99f;
+            --pitch: #2d6a4f;
+            --pitch-hover: #40916c;
+            --home-clr: #2d6a4f;
+            --draw-clr: #b8860b;
+            --away-clr: #7b2d8b;
+            --red: #c1292e;
+            --border: rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .topbar { height: 4px; background: var(--pitch); }
+
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px; }
+
+        nav {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Instrument Sans', sans-serif;
+            font-size: 20px;
+        }
+
+        .logo span { color: var(--pitch); }
+
+        .nav-tag {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            background: var(--sand);
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+
+        .hero { margin-bottom: 36px; }
+
+        .hero h1 {
+            font-family: 'Instrument Sans', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 14px;
+        }
+
+        .hero p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--ink-muted);
+            max-width: 480px;
+        }
+
+        /* FIXTURE SELECTOR */
+        .fixture-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .fixture-header {
+            background: var(--ink);
+            color: white;
+            padding: 12px 24px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .fixture-header .season { font-weight: 500; opacity: 0.5; }
+
+        .fixture-body { padding: 28px 24px; }
+
+        .teams-row {
+            display: grid;
+            grid-template-columns: 1fr 48px 1fr;
+            gap: 16px;
+            align-items: end;
+            margin-bottom: 24px;
+        }
+
+        .team-pick label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin-bottom: 8px;
+        }
+
+        .team-pick select {
+            width: 100%;
+            padding: 12px 36px 12px 14px;
+            background: var(--warm-white);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: var(--ink);
+            font-family: 'Instrument Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.15s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a7a7a' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        .team-pick select:focus {
+            outline: none;
+            border-color: var(--pitch);
+            background-color: white;
+        }
+
+        .vs-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink-faint);
+            background: white;
+            flex-shrink: 0;
+            margin-bottom: 1px;
+        }
+
+        .predict-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--pitch);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Instrument Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .predict-btn:hover:not(:disabled) { background: var(--pitch-hover); }
+        .predict-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .predict-btn.loading .btn-text { display: none; }
+        .predict-btn.loading .spinner { display: inline-block; }
+
+        .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.25);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.5s linear infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-bar {
+            display: none;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            color: var(--red);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .error-bar.visible { display: block; }
+
+        /* RESULTS */
+        .results-section { display: none; margin-bottom: 48px; }
+
+        .results-section.visible {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .scoreboard {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .scoreboard-top {
+            padding: 28px 24px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sb-matchup {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin-bottom: 8px;
+        }
+
+        .sb-verdict {
+            font-family: 'Instrument Sans', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .sb-verdict.home-win { color: var(--home-clr); }
+        .sb-verdict.draw { color: var(--draw-clr); }
+        .sb-verdict.away-win { color: var(--away-clr); }
+
+        .sb-confidence {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--ink-muted);
+        }
+
+        .sb-confidence strong { color: var(--ink-light); font-weight: 600; }
+
+        .probs { padding: 24px; }
+
+        .prob-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 44px;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .prob-row:last-child { margin-bottom: 0; }
+
+        .prob-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-light);
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .prob-track {
+            height: 28px;
+            background: var(--warm-white);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .prob-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .prob-fill.home { background: var(--home-clr); }
+        .prob-fill.draw { background: var(--draw-clr); }
+        .prob-fill.away { background: var(--away-clr); }
+
+        .prob-pct {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .stats-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .stats-title {
+            padding: 14px 24px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stats-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .stat-cell {
+            padding: 18px 16px;
+            text-align: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat-cell:last-child { border-right: none; }
+
+        .stat-cell .label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-faint);
+            margin-bottom: 8px;
+        }
+
+        .stat-cell .values {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .stat-cell .val-home {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--home-clr);
+        }
+
+        .stat-cell .val-sep {
+            font-size: 11px;
+            color: var(--ink-faint);
+        }
+
+        .stat-cell .val-away {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--away-clr);
+        }
+
+        .model-note {
+            text-align: center;
+            font-size: 11px;
+            color: var(--ink-faint);
+            padding: 8px 0;
+        }
+
+        .model-note code {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--sand);
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--ink-muted);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px 0 32px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--ink-faint);
+        }
+
+        footer strong { color: var(--ink-muted); font-weight: 600; }
+
+        @media (max-width: 540px) {
+            .hero h1 { font-size: 30px; }
+            .teams-row { grid-template-columns: 1fr; gap: 12px; }
+            .vs-circle { margin: 0 auto; width: 36px; height: 36px; font-size: 10px; }
+            .fixture-body { padding: 20px 16px; }
+            .probs { padding: 20px 16px; }
+            .scoreboard-top { padding: 22px 16px 16px; }
+            .sb-verdict { font-size: 26px; }
+            .stats-table { grid-template-columns: 1fr; }
+            .stat-cell { border-right: none; border-bottom: 1px solid var(--border); padding: 14px 16px; }
+            .stat-cell:last-child { border-bottom: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar"></div>
+    <div class="container">
+        <nav>
+            <div class="logo">Match<span>Forecast</span></div>
+            <div class="nav-tag">Premier League 2025–26</div>
+        </nav>
+
+        <div class="hero">
+            <h1>Who wins the<br>next fixture?</h1>
+            <p>Pick a home side and an away side. Our model crunches four seasons of match stats to forecast the result.</p>
+        </div>
+
+        <div class="fixture-card">
+            <div class="fixture-header">
+                <span>Select Fixture</span>
+                <span class="season">2025–26</span>
+            </div>
+            <div class="fixture-body">
+                <div class="teams-row">
+                    <div class="team-pick">
+                        <label>Home</label>
+                        <select id="homeTeam"><option value="">Choose side…</option></select>
+                    </div>
+                    <div class="vs-circle">v</div>
+                    <div class="team-pick">
+                        <label>Away</label>
+                        <select id="awayTeam"><option value="">Choose side…</option></select>
+                    </div>
+                </div>
+                <button class="predict-btn" id="predictBtn" onclick="predict()">
+                    <span class="btn-text">Get Prediction</span>
+                    <div class="spinner"></div>
+                </button>
+                <div class="error-bar" id="errorMsg"></div>
+            </div>
+        </div>
+
+        <div class="results-section" id="results">
+            <div class="scoreboard">
+                <div class="scoreboard-top">
+                    <div class="sb-matchup" id="matchupText"></div>
+                    <div class="sb-verdict" id="verdict"></div>
+                    <div class="sb-confidence" id="confidence"></div>
+                </div>
+                <div class="probs">
+                    <div class="prob-row">
+                        <div class="prob-name" id="homeLabel">Home</div>
+                        <div class="prob-track"><div class="prob-fill home" id="homeBar" style="width:0"></div></div>
+                        <div class="prob-pct" id="homeProb">—</div>
+                    </div>
+                    <div class="prob-row">
+                        <div class="prob-name">Draw</div>
+                        <div class="prob-track"><div class="prob-fill draw" id="drawBar" style="width:0"></div></div>
+                        <div class="prob-pct" id="drawProb">—</div>
+                    </div>
+                    <div class="prob-row">
+                        <div class="prob-name" id="awayLabel">Away</div>
+                        <div class="prob-track"><div class="prob-fill away" id="awayBar" style="width:0"></div></div>
+                        <div class="prob-pct" id="awayProb">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Head-to-Head Comparison</div>
+                <div class="stats-table">
+                    <div class="stat-cell">
+                        <div class="label">Pts / Game</div>
+                        <div class="values">
+                            <span class="val-home" id="homePPG">—</span>
+                            <span class="val-sep">–</span>
+                            <span class="val-away" id="awayPPG">—</span>
+                        </div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="label">Avg Goals</div>
+                        <div class="values">
+                            <span class="val-home" id="homeGoals">—</span>
+                            <span class="val-sep">–</span>
+                            <span class="val-away" id="awayGoals">—</span>
+                        </div>
+                    </div>
+                    <div class="stat-cell">
+                        <div class="label">Win Rate</div>
+                        <div class="values">
+                            <span class="val-home" id="homeWR">—</span>
+                            <span class="val-sep">–</span>
+                            <span class="val-away" id="awayWR">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="model-note">
+                Forecast by <code id="modelType">—</code> · Model accuracy <code id="modelAcc">—</code>
+            </div>
+        </div>
+
+        <footer>
+            <strong>MatchForecast</strong> — built with scikit-learn, Flask & four seasons of data
+        </footer>
+    </div>
+
+    <script>
+        async function loadTeams() {
+            try {
+                const res = await fetch('/api/teams');
+                const data = await res.json();
+                const h = document.getElementById('homeTeam');
+                const a = document.getElementById('awayTeam');
+                data.teams.forEach(t => {
+                    h.add(new Option(t, t));
+                    a.add(new Option(t, t));
+                });
+            } catch (e) {
+                showError('Could not load teams — is the server running?');
+            }
+        }
+
+        async function predict() {
+            const home = document.getElementById('homeTeam').value;
+            const away = document.getElementById('awayTeam').value;
+            const btn = document.getElementById('predictBtn');
+
+            hideError();
+            document.getElementById('results').classList.remove('visible');
+
+            if (!home || !away) return showError('Pick both sides first.');
+            if (home === away) return showError('Choose two different teams.');
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ home_team: home, away_team: away })
+                });
+                const d = await res.json();
+                if (d.error) return showError(d.error);
+                render(d);
+            } catch (e) {
+                showError('Something went wrong — try again.');
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        function render(d) {
+            document.getElementById('matchupText').textContent = d.home_team + '  v  ' + d.away_team;
+
+            const v = document.getElementById('verdict');
+            if (d.prediction === 'Home Win') {
+                v.textContent = d.home_team + ' win';
+                v.className = 'sb-verdict home-win';
+            } else if (d.prediction === 'Away Win') {
+                v.textContent = d.away_team + ' win';
+                v.className = 'sb-verdict away-win';
+            } else {
+                v.textContent = 'Draw';
+                v.className = 'sb-verdict draw';
+            }
+
+            const max = Math.max(d.probabilities.home_win, d.probabilities.draw, d.probabilities.away_win);
+            document.getElementById('confidence').innerHTML = 'Confidence: <strong>' + max + '%</strong>';
+
+            document.getElementById('homeLabel').textContent = d.home_team;
+            document.getElementById('awayLabel').textContent = d.away_team;
+
+            ['homeBar','drawBar','awayBar'].forEach(id => document.getElementById(id).style.width = '0');
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    document.getElementById('homeBar').style.width = d.probabilities.home_win + '%';
+                    document.getElementById('drawBar').style.width = d.probabilities.draw + '%';
+                    document.getElementById('awayBar').style.width = d.probabilities.away_win + '%';
+                });
+            });
+
+            document.getElementById('homeProb').textContent = d.probabilities.home_win + '%';
+            document.getElementById('drawProb').textContent = d.probabilities.draw + '%';
+            document.getElementById('awayProb').textContent = d.probabilities.away_win + '%';
+
+            document.getElementById('homePPG').textContent = d.team_comparison.home_ppg;
+            document.getElementById('awayPPG').textContent = d.team_comparison.away_ppg;
+            document.getElementById('homeGoals').textContent = d.team_comparison.home_goals_avg;
+            document.getElementById('awayGoals').textContent = d.team_comparison.away_goals_avg;
+            document.getElementById('homeWR').textContent = d.team_comparison.home_win_rate + '%';
+            document.getElementById('awayWR').textContent = d.team_comparison.away_win_rate + '%';
+
+            document.getElementById('modelType').textContent = d.model_info.type;
+            document.getElementById('modelAcc').textContent = d.model_info.accuracy + '%';
+
+            document.getElementById('results').classList.add('visible');
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.classList.add('visible');
+        }
+        function hideError() {
+            document.getElementById('errorMsg').classList.remove('visible');
+        }
+
+        loadTeams();
+    </script>
+</body>
+</html>
