@@ -63,7 +63,7 @@ epl-predictor/
 
 | Model               | CV Accuracy | Test Accuracy |
 |----------------------|:-----------:|:-------------:|
-| **Logistic Regression** | 54.3%   | **58.0%** ✅  |
+| **Logistic Regression** | 54.3%   | **58.0%**     |
 | Random Forest        | 51.9%      | 49.9%         |
 | Gradient Boosting    | 47.5%      | 44.0%         |
 
