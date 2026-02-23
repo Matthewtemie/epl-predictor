@@ -2,7 +2,7 @@
 
 An ML-powered web app that predicts Premier League match outcomes, trained on **1,781 real matches** across 5 seasons of football-data.co.uk data.
 
-**[→ Try the live demo](https://YOUR_USERNAME.github.io/epl-predictor/)**
+**[→ Try the live demo](https://matthewtemie.github.io/epl-predictor/)**
 
 ---
 
